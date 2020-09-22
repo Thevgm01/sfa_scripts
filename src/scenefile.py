@@ -35,3 +35,9 @@ class SceneFile(object):
 
 
 scene_file = SceneFile("C:/spaceship_model_v031.ma")
+print(scene_file.folder_path)
+print(scene_file.descriptor)
+print(scene_file.task)
+print(scene_file.ver)
+print(scene_file.ext)
+print(scene_file.filename)

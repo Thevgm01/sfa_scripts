@@ -1,5 +1,3 @@
-# {path} = {folder_path}/{descriptor}_{task}_{v###}.{ext}
-
 from pathlib import Path
 
 
@@ -7,7 +5,8 @@ class SceneFile(object):
     """An abstract representation of a scene file."""
 
     def __init__(self, path):
-        self.folder_path = Path()
+        self.full_path = Path()
+        self.folder_path = self.full_path
         self.descriptor = "main"
         self.task = None
         self.ver = 1
@@ -16,6 +15,7 @@ class SceneFile(object):
 
     def _init_from_path(self, path):
         path = Path(path)
+        self.full_path = path
         self.folder_path = path.parent
         self.ext = path.suffix
         self.descriptor, self.task, ver_str = path.stem.split("_")
@@ -34,10 +34,16 @@ class SceneFile(object):
         return self.folder_path / self.filename
 
 
-scene_file = SceneFile("C:/spaceship_model_v031.ma")
-print(scene_file.folder_path)
-print(scene_file.descriptor)
-print(scene_file.task)
-print(scene_file.ver)
-print(scene_file.ext)
-print(scene_file.filename)
+input_string = "C:/maya_projects\\spaceship_model_v031.ma"
+scene_file = SceneFile(input)
+
+table = [["Input string", input],
+         ["Full path", str(scene_file.full_path)],
+         ["Folder path", str(scene_file.folder_path)],
+         ["Filename", scene_file.filename],
+         ["Descriptor", scene_file.descriptor],
+         ["Task", scene_file.task],
+         ["Version", scene_file.ver],
+         ["Extension", scene_file.ext]]
+for header, value in table:
+    print('%-15s %s' % (header, value))

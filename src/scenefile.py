@@ -5,20 +5,29 @@ from pymel.core.system import Path
 
 log = logging.getLogger(__name__)
 
+
 class SceneFile(object):
     """An abstract representation of a scene file."""
 
-    def __init__(self, path_text):
+    def __init__(self, path_text=None):
         self.full_path = Path()
         self.folder_path = self.full_path
         self.descriptor = "main"
         self.task = None
         self.ver = 1
         self.ext = ".ma"
+        if not path_text:
+            scene = pmc.system.sceneName()
+            if scene:
+                path_text = pmc.system.sceneName()
+            else:
+                log.warning("Unable to initialize SceneFile object "
+                            "from a new scene. Please specify a path.")
+                return
         self._init_from_path(path_text)
 
-    def _init_from_path(self, path):
-        path = Path(path)
+    def _init_from_path(self, path_text):
+        path = Path(path_text)
         self.full_path = path
         self.folder_path = path.parent
         self.ext = path.ext

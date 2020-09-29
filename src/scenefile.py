@@ -1,6 +1,9 @@
-from pymel.core.system import Path
-#from pathlib import Path
+import logging
 
+import pymel.core as pmc
+from pymel.core.system import Path
+
+log = logging.getLogger(__name__)
 
 class SceneFile(object):
     """An abstract representation of a scene file."""
@@ -34,17 +37,16 @@ class SceneFile(object):
     def path(self):
         return self.folder_path / self.filename
 
+    def save(self):
+        """Saves the scene file.
 
-input_string = "C:\\maya_projects\\spaceship_model_v031.ma"
-scene_file = SceneFile(input_string)
+        Returns
+            Path: The path to the scene file if successful
+        """
+        try:
+            return pmc.system.saveAs(self.path)
+        except RuntimeError as err:
+            log.warning("Missing directories in path. Creating directories now...")
+            self.folder_path.makedirs_p()
+            return pmc.system.saveAs(self.path)
 
-table = [["Input string", input],
-         ["Full path", str(scene_file.full_path)],
-         ["Folder path", str(scene_file.folder_path)],
-         ["Filename", scene_file.filename],
-         ["Descriptor", scene_file.descriptor],
-         ["Task", scene_file.task],
-         ["Version", scene_file.ver],
-         ["Extension", scene_file.ext]]
-for header, value in table:
-    print('%-15s %s' % (header, value))

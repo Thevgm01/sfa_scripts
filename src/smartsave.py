@@ -25,6 +25,14 @@ class SmartSaveUI(QtWidgets.QDialog):
         self.setMaximumHeight(200)
         self.setWindowFlags(self.windowFlags() ^
                             QtCore.Qt.WindowContextHelpButtonHint)
+        self.create_ui()
+
+    def create_ui(self):
+        self.title_label = QtWidgets.QLabel("Smart Save")
+        self.title_label.setStyleSheet("font: bold 20px")
+        self.main_layout = QtWidgets.QVBoxLayout()
+        self.main_layout.addWidget(self.title_label)
+        self.setLayout(self.main_layout)
 
 
 class SceneFile(object):

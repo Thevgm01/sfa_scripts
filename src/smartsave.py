@@ -40,17 +40,39 @@ class SmartSaveUI(QtWidgets.QDialog):
         self.setLayout(self.main_layout)
 
     def _create_filename_ui(self):
+        self._create_filename_headers()
+        self._create_filename_inputs()
+        layout = QtWidgets.QGridLayout()
+        layout.addWidget(self.descriptor_header_label, 0, 0)
+        layout.addWidget(self.task_header_label, 0, 2)
+        layout.addWidget(self.version_header_label, 0, 4)
+        layout.addWidget(self.descriptor_line_edit, 1, 0)
+        layout.addWidget(QtWidgets.QLabel("_"), 1, 1)
+        layout.addWidget(self.task_line_edit, 1, 2)
+        layout.addWidget(QtWidgets.QLabel("_"), 1, 3)
+        layout.addWidget(self.version_spinbox, 1, 4)
+        layout.addWidget(self.extension_label, 1, 5)
+        return layout
+
+    def _create_filename_headers(self):
         self.descriptor_header_label = QtWidgets.QLabel("Descriptor")
         self.descriptor_header_label.setStyleSheet("font: bold")
         self.task_header_label = QtWidgets.QLabel("Task")
         self.task_header_label.setStyleSheet("font: bold")
         self.version_header_label = QtWidgets.QLabel("Version")
         self.version_header_label.setStyleSheet("font: bold")
-        layout = QtWidgets.QGridLayout()
-        layout.addWidget(self.descriptor_header_label, 0, 0)
-        layout.addWidget(self.task_header_label, 0, 2)
-        layout.addWidget(self.version_header_label, 0, 4)
-        return layout
+        self.extension_label = QtWidgets.QLabel(".ma")
+
+    def _create_filename_inputs(self):
+        self.descriptor_line_edit = QtWidgets.QLineEdit("main")
+        self.descriptor_line_edit.setMinimumWidth(100)
+        self.task_line_edit = QtWidgets.QLineEdit("model")
+        self.task_line_edit.setFixedWidth(50)
+        self.version_spinbox = QtWidgets.QSpinBox()
+        self.version_spinbox.setButtonSymbols(
+            QtWidgets.QAbstractSpinBox.PlusMinus)
+        self.version_spinbox.setFixedWidth(50)
+        self.version_spinbox.setValue(1)
 
     def _create_folder_ui(self):
         default_folder = Path(cmds.workspace(rootDirectory=True, query=True))

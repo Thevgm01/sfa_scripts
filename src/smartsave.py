@@ -22,25 +22,28 @@ class SmartSaveUI(QtWidgets.QDialog):
     def __init__(self):
         super(SmartSaveUI, self).__init__(parent=maya_main_window())
         self.setWindowTitle("Smart Save")
-        self.setMinimumWidth(500)
-        self.setMaximumHeight(200)
         self.setWindowFlags(self.windowFlags() ^
                             QtCore.Qt.WindowContextHelpButtonHint)
         self.scenefile = SceneFile()
         self.create_ui()
         self.create_connections()
+        self.resize(500, 100)
+        self.setMaximumWidth(700)
+        self.setMaximumHeight(250)
 
     def create_ui(self):
         self.title_label = QtWidgets.QLabel("Smart Save")
         self.title_label.setStyleSheet("font: bold 20px")
         self.folder_layout = self._create_folder_ui()
         self.filename_layout = self._create_filename_ui()
+        self.successful_save = QtWidgets.QLabel("")
         self.save_button_layout = self._create_save_button_ui()
         self.main_layout = QtWidgets.QVBoxLayout()
         self.main_layout.addWidget(self.title_label)
         self.main_layout.addLayout(self.folder_layout)
         self.main_layout.addLayout(self.filename_layout)
         self.main_layout.addStretch()
+        self.main_layout.addWidget(self.successful_save)
         self.main_layout.addLayout(self.save_button_layout)
         self.setLayout(self.main_layout)
 
@@ -88,7 +91,10 @@ class SmartSaveUI(QtWidgets.QDialog):
         self.version_spinbox.setButtonSymbols(
             QtWidgets.QAbstractSpinBox.PlusMinus)
         self.version_spinbox.setFixedWidth(50)
-        self.version_spinbox.setValue(self.scenefile.version)
+        # self.version_spinbox.setValue(self.scenefile.version)
+        # done in create_connections
+        self.version_spinbox.setMinimum(1)
+        self.version_spinbox.setMaximum(999)
 
     def _create_save_button_ui(self):
         self.save_button = QtWidgets.QPushButton("Save")
@@ -103,6 +109,9 @@ class SmartSaveUI(QtWidgets.QDialog):
         self.folder_browse_button.clicked.connect(self._browse_folder)
         self.save_button.clicked.connect(self._save_file)
         self.save_increment_button.clicked.connect(self._save_increment)
+        self.version_spinbox.valueChanged.connect(
+            self._add_version_spinbox_padding)
+        self.version_spinbox.setValue(self.scenefile.version)
 
     @QtCore.Slot()
     def _browse_folder(self):
@@ -119,13 +128,13 @@ class SmartSaveUI(QtWidgets.QDialog):
     def _save_file(self):
         """Saves the scene"""
         self._set_scenefile_properties_from_ui()
-        self.scenefile.save()
+        self._update_successful_save(self.scenefile.save())
 
     @QtCore.Slot()
     def _save_increment(self):
         """Save an increment of the scene"""
         self._set_scenefile_properties_from_ui()
-        self.scenefile.save_increment()
+        self._update_successful_save(self.scenefile.save_increment())
         self.version_spinbox.setValue(self.scenefile.version)
 
     def _set_scenefile_properties_from_ui(self):
@@ -134,6 +143,23 @@ class SmartSaveUI(QtWidgets.QDialog):
         self.scenefile.task = self.task_line_edit.text()
         self.scenefile.version = self.version_spinbox.value()
         self.scenefile.extension = self.extension_label.text()
+
+    def _update_successful_save(self, value):
+        if value:
+            self.successful_save.setText(
+                self.scenefile.filename + " saved successfully!")
+        else:
+            self.successful_save.setText(
+                "Error: Could not save " + self.scenefile.filename)
+
+    @QtCore.Slot()
+    def _add_version_spinbox_padding(self, value):
+        if value >= 100:
+            self.version_spinbox.setPrefix("")
+        elif value >= 10:
+            self.version_spinbox.setPrefix("0")
+        else:
+            self.version_spinbox.setPrefix("00")
 
 
 class SceneFile(object):
@@ -223,4 +249,4 @@ class SceneFile(object):
         Returns:
             Path: The path to the scene file if successful"""
         self.version = self.next_available_version()
-        self.save()
+        return self.save()

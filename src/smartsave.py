@@ -98,7 +98,9 @@ class SmartSaveUI(QtWidgets.QDialog):
         return layout
 
     def create_connections(self):
+        """Connects Signals and Slots"""
         self.folder_browse_button.clicked.connect(self._browse_folder)
+        self.save_button.clicked.connect(self._save_file)
 
     @QtCore.Slot()
     def _browse_folder(self):
@@ -111,37 +113,53 @@ class SmartSaveUI(QtWidgets.QDialog):
                     QtWidgets.QFileDialog.DontResolveSymlinks)
         self.folder_line_edit.setText(folder)
 
+    @QtCore.Slot()
+    def _save_file(self):
+        """Saves the scene"""
+        self.scenefile.folder_path = self.folder_line_edit.text()
+        self.scenefile.descriptor = self.descriptor_line_edit.text()
+        self.scenefile.task = self.task_line_edit.text()
+        self.scenefile.version = self.version_spinbox.value()
+        self.scenefile.extension = self.extension_label.text()
+        self.scenefile.save()
+
 
 class SceneFile(object):
     """An abstract representation of a scene file."""
 
     def __init__(self, path_text=None):
-        self.full_path = Path(cmds.workspace(
-            query=True,
-            rootDirectory=True)) / "scenes"
-        self.folder_path = self.full_path
-        self.descriptor = "main"
-        self.task = "model"
-        self.version = 1
-        self.extension = ".ma"
-        if not path_text:
+        if path_text:
+            self._init_from_path(path_text)
+        else:
             scene = pmc.system.sceneName()
             if scene:
-                path_text = pmc.system.sceneName()
+                self._init_from_path(scene)
             else:
                 log.info("Unable to initialize SceneFile object "
-                         "from a new scene. Initializing with "
+                         "from open scene. Initializing with "
                          "default values.")
-                return
-        self._init_from_path(path_text)
+                self._folder_path = Path(cmds.workspace(
+                    query=True,
+                    rootDirectory=True)) / "scenes"
+                self.descriptor = "main"
+                self.task = "model"
+                self.version = 1
+                self.extension = ".ma"
 
     def _init_from_path(self, path_text):
         path = Path(path_text)
-        self.full_path = path
         self.folder_path = path.parent
         self.extension = path.ext
         self.descriptor, self.task, ver_str = path.name.stripext().split("_")
         self.version = int(ver_str.split("v")[-1])
+
+    @property
+    def folder_path(self):
+        return self._folder_path
+
+    @folder_path.setter
+    def folder_path(self, value):
+        self._folder_path = Path(value)
 
     @property
     def filename(self):

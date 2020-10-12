@@ -28,6 +28,7 @@ class SmartSaveUI(QtWidgets.QDialog):
                             QtCore.Qt.WindowContextHelpButtonHint)
         self.scenefile = SceneFile()
         self.create_ui()
+        self.create_connections()
 
     def create_ui(self):
         self.title_label = QtWidgets.QLabel("Smart Save")
@@ -95,6 +96,20 @@ class SmartSaveUI(QtWidgets.QDialog):
         layout.addWidget(self.save_button)
         layout.addWidget(self.save_increment_button)
         return layout
+
+    def create_connections(self):
+        self.folder_browse_button.clicked.connect(self._browse_folder)
+
+    @QtCore.Slot()
+    def _browse_folder(self):
+        """Opens a dialog box to browse through folders"""
+        folder = QtWidgets.QFileDialog.getExistingDirectory(
+            parent=self,
+            caption="Select folder",
+            dir=self.folder_line_edit.text(),
+            options=QtWidgets.QFileDialog.ShowDirsOnly |
+                    QtWidgets.QFileDialog.DontResolveSymlinks)
+        self.folder_line_edit.setText(folder)
 
 
 class SceneFile(object):

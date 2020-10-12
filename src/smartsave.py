@@ -26,6 +26,7 @@ class SmartSaveUI(QtWidgets.QDialog):
         self.setMaximumHeight(200)
         self.setWindowFlags(self.windowFlags() ^
                             QtCore.Qt.WindowContextHelpButtonHint)
+        self.scenefile = SceneFile()
         self.create_ui()
 
     def create_ui(self):
@@ -77,15 +78,15 @@ class SmartSaveUI(QtWidgets.QDialog):
         self.extension_label = QtWidgets.QLabel(".ma")
 
     def _create_filename_inputs(self):
-        self.descriptor_line_edit = QtWidgets.QLineEdit("main")
+        self.descriptor_line_edit = QtWidgets.QLineEdit(self.scenefile.descriptor)
         self.descriptor_line_edit.setMinimumWidth(100)
-        self.task_line_edit = QtWidgets.QLineEdit("model")
+        self.task_line_edit = QtWidgets.QLineEdit(self.scenefile.task)
         self.task_line_edit.setFixedWidth(50)
         self.version_spinbox = QtWidgets.QSpinBox()
         self.version_spinbox.setButtonSymbols(
             QtWidgets.QAbstractSpinBox.PlusMinus)
         self.version_spinbox.setFixedWidth(50)
-        self.version_spinbox.setValue(1)
+        self.version_spinbox.setValue(self.scenefile.version)
 
     def _create_save_button_ui(self):
         self.save_button = QtWidgets.QPushButton("Save")
@@ -100,19 +101,22 @@ class SceneFile(object):
     """An abstract representation of a scene file."""
 
     def __init__(self, path_text=None):
-        self.full_path = Path()
+        self.full_path = Path(cmds.workspace(
+            query=True,
+            rootDirectory=True)) / "scenes"
         self.folder_path = self.full_path
         self.descriptor = "main"
-        self.task = None
-        self.ver = 1
-        self.ext = ".ma"
+        self.task = "model"
+        self.version = 1
+        self.extension = ".ma"
         if not path_text:
             scene = pmc.system.sceneName()
             if scene:
                 path_text = pmc.system.sceneName()
             else:
-                log.warning("Unable to initialize SceneFile object "
-                            "from a new scene. Please specify a path.")
+                log.info("Unable to initialize SceneFile object "
+                         "from a new scene. Initializing with "
+                         "default values.")
                 return
         self._init_from_path(path_text)
 
@@ -120,17 +124,17 @@ class SceneFile(object):
         path = Path(path_text)
         self.full_path = path
         self.folder_path = path.parent
-        self.ext = path.ext
+        self.extension = path.ext
         self.descriptor, self.task, ver_str = path.name.stripext().split("_")
-        self.ver = int(ver_str.split("v")[-1])
+        self.version = int(ver_str.split("v")[-1])
 
     @property
     def filename(self):
         pattern = "{descriptor}_{task}_v{ver:03d}{ext}"
         return pattern.format(descriptor=self.descriptor,
                               task=self.task,
-                              ver=self.ver,
-                              ext=self.ext)
+                              ver=self.version,
+                              ext=self.extension)
 
     @property
     def path(self):
@@ -153,7 +157,7 @@ class SceneFile(object):
     def next_available_version(self):
         """Return the next available version number in the folder."""
         pattern = "{descriptor}_{task}_v*{ext}".format(
-            descriptor=self.descriptor, task=self.task, ext=self.ext)
+            descriptor=self.descriptor, task=self.task, ext=self.extension)
         matching_scenefiles = []
         for file_ in self.folder_path.files():
             if file_.name.fnmatch(pattern):
@@ -173,5 +177,5 @@ class SceneFile(object):
 
         Returns:
             Path: The path to the scene file if successful"""
-        self.ver = self.next_available_version()
+        self.version = self.next_available_version()
         self.save()

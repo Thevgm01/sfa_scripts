@@ -33,11 +33,24 @@ class SmartSaveUI(QtWidgets.QDialog):
         self.title_label.setStyleSheet("font: bold 20px")
         self.folder_layout = self._create_folder_ui()
         self.filename_layout = self._create_filename_ui()
+        self.save_button_layout = self._create_save_button_ui()
         self.main_layout = QtWidgets.QVBoxLayout()
         self.main_layout.addWidget(self.title_label)
         self.main_layout.addLayout(self.folder_layout)
         self.main_layout.addLayout(self.filename_layout)
+        self.main_layout.addStretch()
+        self.main_layout.addLayout(self.save_button_layout)
         self.setLayout(self.main_layout)
+
+    def _create_folder_ui(self):
+        default_folder = Path(cmds.workspace(rootDirectory=True, query=True))
+        default_folder = default_folder / "scenes"
+        self.folder_line_edit = QtWidgets.QLineEdit(default_folder)
+        self.folder_browse_button = QtWidgets.QPushButton("...")
+        layout = QtWidgets.QHBoxLayout()
+        layout.addWidget(self.folder_line_edit)
+        layout.addWidget(self.folder_browse_button)
+        return layout
 
     def _create_filename_ui(self):
         self._create_filename_headers()
@@ -49,7 +62,7 @@ class SmartSaveUI(QtWidgets.QDialog):
         layout.addWidget(self.descriptor_line_edit, 1, 0)
         layout.addWidget(QtWidgets.QLabel("_"), 1, 1)
         layout.addWidget(self.task_line_edit, 1, 2)
-        layout.addWidget(QtWidgets.QLabel("_"), 1, 3)
+        layout.addWidget(QtWidgets.QLabel("_v"), 1, 3)
         layout.addWidget(self.version_spinbox, 1, 4)
         layout.addWidget(self.extension_label, 1, 5)
         return layout
@@ -74,14 +87,12 @@ class SmartSaveUI(QtWidgets.QDialog):
         self.version_spinbox.setFixedWidth(50)
         self.version_spinbox.setValue(1)
 
-    def _create_folder_ui(self):
-        default_folder = Path(cmds.workspace(rootDirectory=True, query=True))
-        default_folder = default_folder / "scenes"
-        self.folder_line_edit = QtWidgets.QLineEdit(default_folder)
-        self.folder_browse_button = QtWidgets.QPushButton("...")
+    def _create_save_button_ui(self):
+        self.save_button = QtWidgets.QPushButton("Save")
+        self.save_increment_button = QtWidgets.QPushButton("Save Increment")
         layout = QtWidgets.QHBoxLayout()
-        layout.addWidget(self.folder_line_edit)
-        layout.addWidget(self.folder_browse_button)
+        layout.addWidget(self.save_button)
+        layout.addWidget(self.save_increment_button)
         return layout
 
 

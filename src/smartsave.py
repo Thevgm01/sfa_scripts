@@ -79,7 +79,8 @@ class SmartSaveUI(QtWidgets.QDialog):
         self.extension_label = QtWidgets.QLabel(".ma")
 
     def _create_filename_inputs(self):
-        self.descriptor_line_edit = QtWidgets.QLineEdit(self.scenefile.descriptor)
+        self.descriptor_line_edit = QtWidgets.QLineEdit(
+            self.scenefile.descriptor)
         self.descriptor_line_edit.setMinimumWidth(100)
         self.task_line_edit = QtWidgets.QLineEdit(self.scenefile.task)
         self.task_line_edit.setFixedWidth(50)
@@ -101,6 +102,7 @@ class SmartSaveUI(QtWidgets.QDialog):
         """Connects Signals and Slots"""
         self.folder_browse_button.clicked.connect(self._browse_folder)
         self.save_button.clicked.connect(self._save_file)
+        self.save_increment_button.clicked.connect(self._save_increment)
 
     @QtCore.Slot()
     def _browse_folder(self):
@@ -116,12 +118,22 @@ class SmartSaveUI(QtWidgets.QDialog):
     @QtCore.Slot()
     def _save_file(self):
         """Saves the scene"""
+        self._set_scenefile_properties_from_ui()
+        self.scenefile.save()
+
+    @QtCore.Slot()
+    def _save_increment(self):
+        """Save an increment of the scene"""
+        self._set_scenefile_properties_from_ui()
+        self.scenefile.save_increment()
+        self.version_spinbox.setValue(self.scenefile.version)
+
+    def _set_scenefile_properties_from_ui(self):
         self.scenefile.folder_path = self.folder_line_edit.text()
         self.scenefile.descriptor = self.descriptor_line_edit.text()
         self.scenefile.task = self.task_line_edit.text()
         self.scenefile.version = self.version_spinbox.value()
         self.scenefile.extension = self.extension_label.text()
-        self.scenefile.save()
 
 
 class SceneFile(object):
@@ -202,7 +214,7 @@ class SceneFile(object):
         latest_version = latest_scenefile.name.stripext().split("_v")[-1]
         return int(latest_version) + 1
 
-    def increment_save(self):
+    def save_increment(self):
         """Increments the version and saves the scene file.
 
         If the file already exists, increments the version number from

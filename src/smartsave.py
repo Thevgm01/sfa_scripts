@@ -3,6 +3,7 @@ import logging
 from PySide2 import QtWidgets, QtCore
 from shiboken2 import wrapInstance
 import maya.OpenMayaUI as omui
+import maya.cmds as cmds
 import pymel.core as pmc
 from pymel.core.system import Path
 
@@ -30,15 +31,21 @@ class SmartSaveUI(QtWidgets.QDialog):
     def create_ui(self):
         self.title_label = QtWidgets.QLabel("Smart Save")
         self.title_label.setStyleSheet("font: bold 20px")
-        self.folder_line_edit = QtWidgets.QLineEdit("C:\\")
+        self.folder_layout = self._create_folder_ui()
+        self.main_layout = QtWidgets.QVBoxLayout()
+        self.main_layout.addWidget(self.title_label)
+        self.main_layout.addLayout(self.folder_layout)
+        self.setLayout(self.main_layout)
+
+    def _create_folder_ui(self):
+        default_folder = Path(cmds.workspace(rootDirectory=True, query=True))
+        default_folder = default_folder / "scenes"
+        self.folder_line_edit = QtWidgets.QLineEdit(default_folder)
         self.folder_browse_button = QtWidgets.QPushButton("...")
         layout = QtWidgets.QHBoxLayout()
         layout.addWidget(self.folder_line_edit)
         layout.addWidget(self.folder_browse_button)
-        self.main_layout = QtWidgets.QVBoxLayout()
-        self.main_layout.addWidget(self.title_label)
-        self.main_layout.addLayout(layout)
-        self.setLayout(self.main_layout)
+        return layout
 
 
 class SceneFile(object):

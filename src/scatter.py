@@ -79,10 +79,26 @@ class Scatterer(object):
         scatter_source = self.selected_objects[1]
 
         for vertex in scatter_target.vtx:
+            # pmc.select(vertex, r=True)
+            # a = pmc.polyNormalPerVertex(q=True, xyz=True)
+            # num_normals = len(a) / 3
+            # average_normal = [0, 0, 0]
+            # i = 0
+            # while i < len(a):
+            #     average_normal[i % 3] += a[i] / num_normals
+            #     i += 1
+            # # print(average_normal)
+
             new_instance = pmc.instance(scatter_source)
             position = pmc.pointPosition(vertex, w=True)
             pmc.move(position[0], position[1], position[2],
                      new_instance, a=True, ws=True)
+
+            pmc.normalConstraint(scatter_target, new_instance)
+
+
+
+            pmc.normalConstraint(scatter_target, new_instance, rm=True)
 
         # hello = cmds.polyListComponentConversion(tv=True)
         # print(hello[0])

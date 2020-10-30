@@ -5,7 +5,6 @@ from shiboken2 import wrapInstance
 import maya.OpenMayaUI as omui
 import maya.cmds as cmds
 import pymel.core as pmc
-from pymel.core.system import Path
 
 log = logging.getLogger(__name__)
 
@@ -68,5 +67,32 @@ class ScatterUI(QtWidgets.QDialog):
 
 class Scatterer(object):
 
+    def __init__(self):
+        self.selected_objects = []
+
     def scatter(self):
+        self.selected_objects = []
+
+        # Get objects currently selected
+        self.selected_objects = pmc.ls(os=True)
+        scatter_target = self.selected_objects[0]
+        scatter_source = self.selected_objects[1]
+
+        for vertex in scatter_target.vtx:
+            new_instance = pmc.instance(scatter_source)
+            position = pmc.pointPosition(vertex, w=True)
+            pmc.move(position[0], position[1], position[2],
+                     new_instance, a=True, ws=True)
+
+        # hello = cmds.polyListComponentConversion(tv=True)
+        # print(hello[0])
+
+        # vertices = cmds.polyEvaluate(scatter_target, v=True)
+        # i = 0
+        # while i < vertices:
+        #     print(scatter_target.vtx)
+        #     i += 1
+        #print(cmds.filterExpand(selectionMask=31))
+        #self.scatterTargetsVertices.append(vertices)
+
         return

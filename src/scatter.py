@@ -66,17 +66,25 @@ class ScatterUI(QtWidgets.QDialog):
         # self.scatterer.extension = self.extension_label.text()
 
 
+def random_between_two_vectors(vec1, vec2):
+    result = [0, 0, 0]
+    result[0] = random.uniform(vec1[0], vec2[0])
+    result[1] = random.uniform(vec1[1], vec2[1])
+    result[2] = random.uniform(vec1[2], vec2[2])
+    return result
+
+
 class Scatterer(object):
 
     def __init__(self):
         self.selected_objects = []
         self.scatter_density = 1
-        self.random_scale_min = [0, 0, 0]
-        self.random_scale_max = [2, 2, 2]
+        self.random_scale_min = [1, 1, 1]
+        self.random_scale_max = [1, 1, 1]
         self.random_rotation_min = [0, 0, 0]
         self.random_rotation_max = [0, 0, 0]
-        self.random_position_min = [0, 0, 0]
-        self.random_position_max = [0, 0, 0]
+        self.random_position_min = [-1, -1, -1]
+        self.random_position_max = [1, 1, 1]
 
     def scatter(self):
         self.selected_objects = []
@@ -87,6 +95,7 @@ class Scatterer(object):
         scatter_source = self.selected_objects[1]
 
         for vertex in scatter_target.vtx:
+            # Get the average normal of the vertex
             # pmc.select(vertex, r=True)
             # a = pmc.polyNormalPerVertex(q=True, xyz=True)
             # num_normals = len(a) / 3
@@ -102,18 +111,25 @@ class Scatterer(object):
             pmc.move(position[0], position[1], position[2],
                      new_instance, a=True, ws=True)
 
-            pmc.normalConstraint(scatter_target, new_instance)
-            pmc.normalConstraint(scatter_target, new_instance, rm=True)
+            # pmc.normalConstraint(scatter_target, new_instance)
+            # pmc.normalConstraint(scatter_target, new_instance, rm=True)
 
-            scale = self.random_between_two_vectors(
+            scale = random_between_two_vectors(
                 self.random_scale_min, self.random_scale_max)
-            rotation = self.random_between_two_vectors(
+            rotation = random_between_two_vectors(
                 self.random_rotation_min, self.random_rotation_max)
-            position = self.random_between_two_vectors(
+            position = random_between_two_vectors(
                 self.random_position_min, self.random_position_max)
-            pmc.scale(new_instance, scale[0], scale[1], scale[2])
-            #pmc.rotate(rotation[0], rotation[1], rotation[2], new_instance)
-            #pmc.move(position[0], position[1], position[2], new_instance)
+
+            pmc.scale(new_instance,
+                      scale[0], scale[1], scale[2],
+                      r=True)
+            pmc.rotate(new_instance,
+                       rotation[0], rotation[1], rotation[2],
+                       r=True)
+            pmc.move(position[0], position[1], position[2],
+                     new_instance,
+                     r=True)
 
         # hello = cmds.polyListComponentConversion(tv=True)
         # print(hello[0])
@@ -127,10 +143,3 @@ class Scatterer(object):
         #self.scatterTargetsVertices.append(vertices)
 
         return
-
-    def random_between_two_vectors(self, vec1, vec2):
-        result = [0, 0, 0]
-        result[0] = random.uniform(vec1[0], vec2[0])
-        result[1] = random.uniform(vec1[1], vec2[1])
-        result[2] = random.uniform(vec1[2], vec2[2])
-        return result

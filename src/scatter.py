@@ -40,23 +40,20 @@ class ScatterUI(QtWidgets.QDialog):
             "scatter. Change any random variables you want to, then click "
             "the \"Scatter\" button.")
         self.description_label.setWordWrap(True)
-        # self.folder_layout = self._create_folder_ui()
-        # self.filename_layout = self._create_filename_ui()
-        # self.successful_save = QtWidgets.QLabel("")
         self.vector_array = self._create_vector_array_ui()
+        self.alignment_button = QtWidgets.QCheckBox("Align instances to "
+                                                    "surface normals")
         self.scatter_button = QtWidgets.QPushButton("Scatter")
         self.main_layout = QtWidgets.QVBoxLayout()
         self.main_layout.addWidget(self.title_label)
         self.main_layout.addWidget(self.description_label)
-        # self.main_layout.addLayout(self.folder_layout)
-        # self.main_layout.addLayout(self.filename_layout)
-        # self.main_layout.addStretch()
         self.main_layout.addStretch()
         self.main_layout.addLayout(self.vector_array)
+        self.main_layout.addWidget(self.alignment_button)
         self.main_layout.addStretch()
         self.main_layout.addWidget(self.scatter_button)
-        # self.main_layout.addLayout(self.save_button_layout)
         self.setLayout(self.main_layout)
+        self._set_ui_properties_from_scatter()
 
     def _create_vector_array_ui(self):
         w, h = 3, 6
@@ -94,6 +91,8 @@ class ScatterUI(QtWidgets.QDialog):
     def _create_vector_component_spinbox(self):
         spinbox = QtWidgets.QDoubleSpinBox()
         spinbox.setSingleStep(0.1)
+        spinbox.setMinimum(-1000)
+        spinbox.setMaximum(1000)
         spinbox.setButtonSymbols(
             QtWidgets.QAbstractSpinBox.PlusMinus)
         spinbox.setFixedWidth(50)
@@ -108,16 +107,32 @@ class ScatterUI(QtWidgets.QDialog):
     def _scatter(self):
         self._set_scatter_properties_from_ui()
         self.scatterer.scatter()
+        self._set_scatter_properties_from_ui()
         return
 
+    def _set_ui_properties_from_scatter(self):
+        i = 0
+        while i < len(self.spinbox_array):
+            j = 0
+            while j < len(self.spinbox_array[i]):
+                self.spinbox_array[i][j].setValue(
+                    self.scatterer.attribute_array[i][j])
+                j += 1
+            i += 1
+
+        self.alignment_button.setChecked(self.scatterer.alignment)
+
     def _set_scatter_properties_from_ui(self):
-        self.scatterer.
-        return
-        # self.scatterer.folder_path = self.folder_line_edit.text()
-        # self.scatterer.descriptor = self.descriptor_line_edit.text()
-        # self.scatterer.task = self.task_line_edit.text()
-        # self.scatterer.version = self.version_spinbox.value()
-        # self.scatterer.extension = self.extension_label.text()
+        i = 0
+        while i < len(self.spinbox_array):
+            j = 0
+            while j < len(self.spinbox_array[i]):
+                self.scatterer.attribute_array[i][j] = \
+                    self.spinbox_array[i][j].value()
+                j += 1
+            i += 1
+
+        self.scatterer.alignment = self.alignment_button.checkState()
 
 
 def random_between_two_vectors(vec1, vec2):
@@ -133,12 +148,18 @@ class Scatterer(object):
     def __init__(self):
         self.selected_objects = []
         self.scatter_density = 1
-        self.random_scale_min = [1, 1, 1]
-        self.random_scale_max = [1, 1, 1]
-        self.random_rotation_min = [0, 0, 0]
-        self.random_rotation_max = [0, 0, 0]
-        self.random_position_min = [0, 0, 0]
-        self.random_position_max = [0, 0, 0]
+        self.alignment = True
+
+        # Scale Min    X Y Z
+        # Scale Max    X Y Z
+        # Rotation Min X Y Z
+        # Rotation Max X Y Z
+        # Position Min X Y Z
+        # Position Max X Y Z
+        w, h = 3, 6
+        self.attribute_array = [[0 for x in range(w)] for y in range(h)]
+        self.attribute_array[0] = [1, 1, 1]
+        self.attribute_array[1] = [1, 1, 1]
 
     def scatter(self):
         self.selected_objects = []
@@ -165,15 +186,16 @@ class Scatterer(object):
             pmc.move(position[0], position[1], position[2],
                      new_instance, a=True, ws=True)
 
-            pmc.normalConstraint(scatter_target, new_instance)
-            pmc.normalConstraint(scatter_target, new_instance, rm=True)
+            if self.alignment:
+                pmc.normalConstraint(scatter_target, new_instance)
+                pmc.normalConstraint(scatter_target, new_instance, rm=True)
 
             scale = random_between_two_vectors(
-                self.random_scale_min, self.random_scale_max)
+                self.attribute_array[0], self.attribute_array[1])
             rotation = random_between_two_vectors(
-                self.random_rotation_min, self.random_rotation_max)
+                self.attribute_array[2], self.attribute_array[3])
             position = random_between_two_vectors(
-                self.random_position_min, self.random_position_max)
+                self.attribute_array[4], self.attribute_array[5])
 
             pmc.scale(new_instance,
                       scale[0], scale[1], scale[2],

@@ -37,7 +37,7 @@ class ScatterUI(QtWidgets.QDialog):
         self.description_label = QtWidgets.QLabel(
             "First click on the object you want to scatter objects onto. "
             "Then hold shift and click on the object that you want to "
-            "scatter. Change any random variables you want to, then click "
+            "scatter. Change any of the settings you want to, then click "
             "the \"Scatter\" button.")
         self.description_label.setWordWrap(True)
         self.vector_array = self._create_vector_array_ui()
@@ -62,11 +62,11 @@ class ScatterUI(QtWidgets.QDialog):
         layout = QtWidgets.QGridLayout()
 
         layout.addWidget(QtWidgets.QLabel("Scale Minimum"), 0, 0)
-        layout.addWidget(QtWidgets.QLabel("Scale Minimum"), 1, 0)
+        layout.addWidget(QtWidgets.QLabel("Scale Maximum"), 1, 0)
         layout.addWidget(QtWidgets.QLabel("Rotation Minimum"), 2, 0)
-        layout.addWidget(QtWidgets.QLabel("Rotation Minimum"), 3, 0)
+        layout.addWidget(QtWidgets.QLabel("Rotation Maximum"), 3, 0)
         layout.addWidget(QtWidgets.QLabel("Position Minimum"), 4, 0)
-        layout.addWidget(QtWidgets.QLabel("Position Minimum"), 5, 0)
+        layout.addWidget(QtWidgets.QLabel("Position Maximum"), 5, 0)
 
         i = 0
         while i < 6:

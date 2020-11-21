@@ -164,19 +164,29 @@ class Scatterer(object):
         self.attribute_array[1] = [1, 1, 1]
 
     def scatter(self):
-        self.selected_objects = []
+        selected_objects = []
 
         # Get objects currently selected
-        self.selected_objects = pmc.ls(os=True)
-        scatter_target = self.selected_objects[0]
-        scatter_sources = self.selected_objects[1:]
+        selected_objects = pmc.ls(os=True, fl=True)
+        scatter_targets = []
+        scatter_sources = []
 
-        vertexes = range(len(scatter_target.vtx))
+        if type(selected_objects[0]) == pmc.general.MeshVertex:
+            i = 0
+            while type(selected_objects[i]) == pmc.general.MeshVertex:
+                scatter_targets.append(selected_objects[i])
+                i += 1
+            scatter_sources = selected_objects[i:]
+        else:
+            scatter_targets = selected_objects[0].vtx
+            scatter_sources = selected_objects[1:]
+
+        vertexes = range(len(scatter_targets))
         random.shuffle(vertexes)
         vertexes = vertexes[:int(self.scatter_percentage * len(vertexes))]
 
         for i in vertexes:
-            vertex = scatter_target.vtx[i]
+            vertex = scatter_targets[i]
 
             # Get the average normal of the vertex
             # pmc.select(vertex, r=True)
@@ -195,8 +205,8 @@ class Scatterer(object):
                      new_instance, a=True, ws=True)
 
             if self.alignment:
-                pmc.normalConstraint(scatter_target, new_instance)
-                pmc.normalConstraint(scatter_target, new_instance, rm=True)
+                pmc.normalConstraint(vertex, new_instance)
+                pmc.normalConstraint(vertex, new_instance, rm=True)
 
             scale = random_between_two_vectors(
                 self.attribute_array[0], self.attribute_array[1])

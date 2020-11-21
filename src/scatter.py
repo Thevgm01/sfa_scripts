@@ -167,7 +167,7 @@ class Scatterer(object):
         # Get objects currently selected
         self.selected_objects = pmc.ls(os=True)
         scatter_target = self.selected_objects[0]
-        scatter_source = self.selected_objects[1]
+        scatter_sources = self.selected_objects[1:]
 
         for vertex in scatter_target.vtx:
             # Get the average normal of the vertex
@@ -181,7 +181,7 @@ class Scatterer(object):
             #     i += 1
             # # print(average_normal)
 
-            new_instance = pmc.instance(scatter_source)
+            new_instance = pmc.instance(random.choice(scatter_sources))
             position = pmc.pointPosition(vertex, w=True)
             pmc.move(position[0], position[1], position[2],
                      new_instance, a=True, ws=True)
@@ -205,7 +205,7 @@ class Scatterer(object):
                        r=True)
             pmc.move(position[0], position[1], position[2],
                      new_instance,
-                     r=True, os=True)
+                     r=True, os=True, wd=True)
 
         # hello = cmds.polyListComponentConversion(tv=True)
         # print(hello[0])

@@ -1,3 +1,4 @@
+import copy
 import logging
 import random
 
@@ -149,6 +150,7 @@ class Scatterer(object):
         self.selected_objects = []
         self.scatter_density = 1
         self.alignment = True
+        self.scatter_percentage = 1
 
         # Scale Min    X Y Z
         # Scale Max    X Y Z
@@ -169,7 +171,13 @@ class Scatterer(object):
         scatter_target = self.selected_objects[0]
         scatter_sources = self.selected_objects[1:]
 
-        for vertex in scatter_target.vtx:
+        vertexes = range(len(scatter_target.vtx))
+        random.shuffle(vertexes)
+        vertexes = vertexes[:int(self.scatter_percentage * len(vertexes))]
+
+        for i in vertexes:
+            vertex = scatter_target.vtx[i]
+
             # Get the average normal of the vertex
             # pmc.select(vertex, r=True)
             # a = pmc.polyNormalPerVertex(q=True, xyz=True)
